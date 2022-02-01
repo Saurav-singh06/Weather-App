@@ -13,6 +13,8 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
 
     private RelativeLayout homeRL;
@@ -21,6 +23,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView weatherRV;
     private TextInputEditText cityEdt;
     private ImageView backIV,iconIV,searchIV;
+    private ArrayList<WeatherModel> weatherModelArrayList;
+    private WeatherAdapter weatherAdapter;
+
 
 
     @Override
@@ -37,5 +42,15 @@ public class MainActivity extends AppCompatActivity {
         backIV = findViewById(R.id.img_Back);
         iconIV = findViewById(R.id.img_Icon);
         searchIV = findViewById(R.id.img_search);
+
+        weatherModelArrayList new ArrayList<>();
+        weatherAdapter = new WeatherAdapter(this,weatherModelArrayList);
+        weatherRV.setAdapter(weatherAdapter);
+
+
+    }
+
+    private  void  getWeatherInfo(String cityNmae){
+
     }
 }
