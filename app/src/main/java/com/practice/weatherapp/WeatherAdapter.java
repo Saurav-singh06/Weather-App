@@ -41,7 +41,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.ViewHold
        holder.temperatureTV.setText(model.getTemp() + "°C");
        Picasso.get().load("http:".concat(model.getIcon())).into(holder.conditionTV);
        holder.windTV.setText(model.getWindSpeed()+"km/h");
-       SimpleDateFormat input = new SimpleDateFormat("YYYY-MM-dd hh:mm");
+       SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd hh:mm");
        SimpleDateFormat output = new SimpleDateFormat("hh:mm aa");
        try{
            Date t = input.parse(model.getTime());

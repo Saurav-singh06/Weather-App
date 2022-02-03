@@ -23,8 +23,18 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.textfield.TextInputEditText;
+import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
@@ -52,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-
         setContentView(R.layout.activity_main);
+
         homeRL = findViewById(R.id.rl_Home);
         loadingPB = findViewById(R.id.pb_loading);
         CityNameTV = findViewById(R.id.txt_CityName);
@@ -129,8 +139,56 @@ public class MainActivity extends AppCompatActivity {
         return cityName;
     }
 
-    private  void  getWeatherInfo(String cityNmae){
-    String url = "http://api.weatherapi.com/v1/current.json?key=13b2dd0fb522481e9d0183358223101&q="+cityNmae+"&aqi=no";
+    private  void  getWeatherInfo(String cityName){
+    String url = "http://api.weatherapi.com/v1/forecast.json?key=13b2dd0fb522481e9d0183358223101&q="+cityName+"&days=1&aqi=no&alerts=no";
+    CityNameTV.setText(cityName);
+        RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
 
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                loadingPB.setVisibility(View.GONE);
+                homeRL.setVisibility(View.VISIBLE);
+                weatherModelArrayList.clear();
+                try {
+                    String temp = response.getJSONObject("current").getString("temp_c");
+                    tempTV.setText(temp + "°C");
+                    int isDay = response.getJSONObject("current").getInt("is_day");
+
+                    String condition = response.getJSONObject("current").getJSONObject("condition").getString("text");
+                    String conditionICon = response.getJSONObject("current").getJSONObject("condition").getString("icon");
+                    Picasso.get().load("http:".concat(conditionICon)).into(iconIV);
+                    conditionTV.setText(condition);
+                    if (isDay ==1){
+                        Picasso.get().load("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtd8rODjFXHXH9_FdzULV9TmzodjNZnMNNmnPJT7HIQBlb0R10b9c4_66OsU5rHIATm5s&usqp=CAU").into(backIV);
+                    }else {
+                        Picasso.get().load("https://media.istockphoto.com/vectors/weather-app-design-modern-ui-screen-design-for-mobile-app-with-web-vector-id1178256163?k=20&m=1178256163&s=170667a&w=0&h=0pHKXAK2RNx7RWGviPiaQ7uK3aV1vOjLYFJH6aCdcuE=").into(backIV);
+                    }
+
+                    JSONObject forecastObj = response.getJSONObject("forecast");
+                    JSONObject forcast0 = forecastObj.getJSONArray("forecastday").getJSONObject(0);
+                    JSONArray hourArray = forcast0.getJSONArray("hour");
+
+                    for (int i=0; i<hourArray.length(); i++){
+                        JSONObject hourObj = hourArray.getJSONObject(i);
+                        String time = hourObj.getString("time");
+                        String temper = hourObj.getString("temp_c");
+                        String img = hourObj.getJSONObject("condition").getString("icon");
+                        String wind = hourObj.getString("wind_kph");
+                        weatherModelArrayList.add(new WeatherModel(time,temper,img,wind));
+                    }
+                    weatherAdapter.notifyDataSetChanged();
+
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(MainActivity.this,"Please enter Valid city name..",Toast.LENGTH_SHORT).show();
+            }
+        });
+        requestQueue.add(jsonObjectRequest);
     }
 }
